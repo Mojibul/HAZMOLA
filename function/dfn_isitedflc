@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION STLBAS.dfn_isitedflc (in_parent_name IN VARCHAR2)
+   RETURN VARCHAR2
+IS
+   EDFLC      VARCHAR2 (1) := 'E';
+   CTSULC     VARCHAR2 (1) := 'C';
+   NORMALLC   VARCHAR2 (1) := 'N';
+BEGIN
+   IF UPPER (in_parent_name) = 'STEDFMAS'
+   THEN
+      RETURN EDFLC;
+   ELSIF UPPER (in_parent_name) = 'STCTMAST'
+   THEN
+      RETURN CTSULC;
+   ELSIF UPPER (in_parent_name) = 'ST3TMSTR'
+   THEN
+      RETURN NORMALLC;
+   END IF;
+EXCEPTION
+   WHEN OTHERS
+   THEN
+      RETURN NORMALLC;
+      raise_application_error (
+         -20100,
+         'Program parent name has problem. check dfn_IsitEDFlc');
+END;
