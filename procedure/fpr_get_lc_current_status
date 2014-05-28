@@ -1,0 +1,22 @@
+PROCEDURE fpr_get_lc_current_status (
+   in_branch_id   IN       VARCHAR2,
+   in_lcnumber    IN       VARCHAR2,
+   out_lcstatus   OUT      VARCHAR2
+) IS
+BEGIN
+   SELECT /*+ INDEX_DESC(A) */
+          a.lcstat
+     INTO out_lcstatus
+     FROM stilcmas a
+    WHERE a.brancd = in_branch_id 
+      AND a.actype IN ('T01', 'T05')
+      AND a.actnum = a.actnum
+      AND a.lcnumb = in_lcnumber;
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN
+      base_message_box (   'L/C number not found in stilcmas.'
+                        || CHR (10)
+                        || 'Please inform IT department'
+                       );
+      RAISE form_trigger_failure;
+END;
