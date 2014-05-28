@@ -1,0 +1,40 @@
+CREATE OR REPLACE FUNCTION dfn_getnostro_transaction
+   RETURN t_nostro_transaction_tab PIPELINED
+IS
+   TYPE l_cur_type IS REF CURSOR;
+BEGIN
+   FOR ind IN (SELECT b.nostcode, c.coddes, DECODE (b.curcde, NULL, a.currcode, b.curcde) currcode, b.doctdate,
+                      a.dbcrcode, b.nostrfno, b.hocrfamt, b.hocrexrt, ROUND (b.hocrfamt * b.hocrexrt, 2) bdtamt,
+                      a.naration
+                 FROM stlbas.sttrndtl a,
+                      stlbas.sttrdetl b,
+                      (SELECT corcod, coddes
+                         FROM stcodmas
+                        WHERE harcod = 'NOS') c
+                WHERE a.compcode = b.compcode
+                  AND a.docttype = b.docttype
+                  AND a.subttype = b.subttype
+                  AND a.docnumbr = b.docnumbr
+                  AND a.doctdate = b.doctdate
+                  AND a.serlnumb = b.serlnumb
+                  AND b.nostcode = c.corcod)
+   LOOP
+      PIPE ROW (t_nostro_transaction_rec (nostro_glac      => ind.nostcode,
+                                          nostro_desc      => ind.coddes,
+                                          currency         => ind.currcode,
+                                          txn_date         => ind.doctdate,
+                                          debcre           => ind.dbcrcode,
+                                          lcnumber         => ind.nostrfno,
+                                          amtfcy           => ind.hocrfamt,
+                                          exgrate          => ind.hocrexrt,
+                                          amtlcy           => ind.bdtamt,
+                                          narration        => ind.naration
+                                         ));
+   END LOOP;
+
+   RETURN;
+EXCEPTION
+   WHEN OTHERS
+   THEN
+      raise_application_error (-20000, SQLERRM);
+END;
