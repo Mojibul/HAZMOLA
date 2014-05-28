@@ -1,0 +1,14 @@
+CREATE OR REPLACE TYPE stlbas.t_nostro_transaction_rec AS OBJECT (
+   nostro_glac   VARCHAR2 (10),
+   nostro_desc   VARCHAR2 (100),
+   currency      VARCHAR2 (3),
+   txn_date      DATE,
+   debcre        VARCHAR2 (1),
+   lcnumber      VARCHAR2 (25),
+   amtfcy        NUMBER (16, 3),
+   exgrate       NUMBER (9, 5),
+   amtlcy        NUMBER (16, 3),
+   narration     VARCHAR2 (150)
+);
+
+CREATE OR REPLACE TYPE stlbas.t_nostro_transaction_tab AS TABLE OF t_nostro_transaction_rec;
