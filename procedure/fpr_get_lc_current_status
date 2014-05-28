@@ -19,4 +19,10 @@ EXCEPTION
                         || 'Please inform IT department'
                        );
       RAISE form_trigger_failure;
+   WHEN TOO_MANY_ROWS THEN 
+   base_message_box (   'Many L/C number  found in stilcmas.'
+                        || CHR (10)
+                        || 'Please inform IT department'
+                       );
+      RAISE form_trigger_failure;
 END;
