@@ -1,0 +1,14 @@
+CREATE OR REPLACE VIEW vw_nostro_tansaction (nostro_glac,
+                                             nostro_desc,
+                                             currency,
+                                             transaction_date,
+                                             debcre,
+                                             lcnumber,
+                                             amtfcy,
+                                             exgrate,
+                                             amtlcy,
+                                             narration
+                                            )
+AS
+   SELECT nostro_glac, nostro_desc, currency, txn_date, debcre, lcnumber, amtfcy, exgrate, amtlcy, narration
+     FROM TABLE (dfn_getnostro_transaction);
