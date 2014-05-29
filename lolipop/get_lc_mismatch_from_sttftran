@@ -1,0 +1,34 @@
+SELECT n.brancd, n.actype, n.actnum,n.lcnumb, n.opndat,n.lcamtf, n.lcamtl, n.rmamtf,
+       n.rmamtl, n.acpamt, n.acprmt, n.ttllcamt, n.ttlabp,  c.rvamtl,
+       (n.ttllcamt - n.ttlabp - c.rvamtl) curouts
+  FROM (SELECT DISTINCT a.actnum, a.brancd, a.actype, a.lcnumb, a.lcamtf,
+                        a.lcamtl, a.rmamtf, a.rmamtl, a.acpamt, a.acprmt,
+                        ROUND
+                           (SUM (DECODE (b.oprtyp,
+                                         'ISS', b.tamtlc,
+                                         'AMD', b.tamtlc
+                                        )
+                                ) OVER (PARTITION BY (b.actnum))
+                           ) ttllcamt,
+                        ROUND
+                           (SUM (DECODE (b.oprtyp, 'ACP', b.seamtl)) OVER (PARTITION BY (b.actnum
+                                                                                        ))
+                           ) ttlabp,
+                        a.opndat
+                   FROM stlbas.stilcmas a, stlbas.sttftran b
+                  WHERE a.brancd = :p_brancd
+                    AND b.brancd = :p_brancd
+                    AND a.actype = 'T05'
+                    AND b.actype = 'T05'
+                    AND a.brancd = b.brancd
+                    AND a.actype = b.actype
+                    AND a.actnum = b.actnum
+                    AND a.lcnumb IN ('208510040014','208510040219','208511060028','208511060041','208512060001','208512060012','208509060031','208509120019')
+                   -- AND a.lcnumb = :p_lcnumber
+                    
+                    ) n,
+       stlbas.sttftran c
+ WHERE c.brancd = n.brancd
+   AND c.actype = n.actype
+   AND c.actnum = n.actnum
+   AND c.oprtyp = 'CLS'
