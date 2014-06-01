@@ -1,0 +1,35 @@
+CREATE FUNCTION ffn_pad_payment_for (in_brancd   IN VARCHAR2,
+                                     in_actype   IN VARCHAR2,
+                                     in_actnum   IN VARCHAR2)
+   RETURN VARCHAR2
+AS
+   v_pad_payment_for   VARCHAR2 (1);
+BEGIN
+   SELECT /*+ INDEX_DESC(A)*/
+         NVL (a.status, 'N')
+     INTO v_pad_payment_for
+     FROM stfacma2 a
+    WHERE     a.brancd = in_brancd                              --:crq1.brancd
+          AND a.actype = in_actype                             --:data1.actype
+          AND a.actnum = in_actnum;                           --:data1.actnum;
+
+   RETURN VARCHAR2;
+EXCEPTION
+   WHEN NO_DATA_FOUND
+   THEN
+      base_message_box (
+         'PAD A/C number ' || in_actnum || ' is not a valid A/C number .');
+      RAISE form_trigger_failure;
+   WHEN TOO_MANY_ROWS
+   THEN
+      base_message_box (
+            'More than One A/c in stfacma2 ....,'
+         || CHR (10)
+         || 'Contact your System Administrator');
+      RAISE form_trigger_failure;
+   WHEN OTHERS
+   THEN
+      Base_Message_box (
+         'Generated from: fpr_pad_payment_for' || CHR (10) || SQLERRM);
+      RAISE form_trigger_failure;
+END ffn_pad_payment_for;
