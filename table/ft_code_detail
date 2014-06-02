@@ -19,3 +19,6 @@ ADD  forbtb   VARCHAR2(1);
 -- Distinguish its Sight L/C or Deferred L/C
 ALTER TABLE FT_CODE_DETAIL
 ADD  sitdef   VARCHAR2(1);
+-- edflcf indicate its a EDF L/C
+ALTER TABLE FT_CODE_DETAIL 
+ADD edflcf VARCHAR2(1);
