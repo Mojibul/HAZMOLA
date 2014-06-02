@@ -1,0 +1,25 @@
+PROCEDURE fpr_getedflc_bankerlibility_gl (in_lcnumber   IN     VARCHAR2,
+                                          out_glcode       OUT VARCHAR2)
+IS
+BEGIN
+   SELECT a.glcode
+     INTO out_glcode
+     FROM stlbas.ft_code_detail a
+    WHERE     a.lctype = 0 || SUBSTR (in_lcnumber, 7, 2)
+          AND a.lcoprtyp = 'ISS'
+          AND a.oprcod = 'LID'
+          AND a.actflg = 'Y'
+          AND a.edflcf = 'E';
+EXCEPTION
+   WHEN NO_DATA_FOUND
+   THEN
+      base_message_box ('GL A/C not found .');
+      RAISE form_trigger_failure;
+   WHEN OTHERS
+   THEN
+      base_message_box (
+            'Generated from fpr_get_edflc_bankder_libility_gl'
+         || CHR (10)
+         || SQLERRM);
+      RAISE form_trigger_failure;
+END fpr_getedflc_bankerlibility_gl;
