@@ -3,17 +3,17 @@ CREATE FUNCTION ffn_pad_payment_for (in_brancd   IN VARCHAR2,
                                      in_actnum   IN VARCHAR2)
    RETURN VARCHAR2
 AS
-   v_pad_payment_for   VARCHAR2 (1);
+   v_pad_payment_for   VARCHAR2 (3);
 BEGIN
    SELECT /*+ INDEX_DESC(A)*/
-         NVL (a.status, 'N')
+         DECODE (a.status,  'N', 'ISS',  'S', 'SHG',  'D', 'ACP')
      INTO v_pad_payment_for
      FROM stfacma2 a
     WHERE     a.brancd = in_brancd                              --:crq1.brancd
           AND a.actype = in_actype                             --:data1.actype
           AND a.actnum = in_actnum;                           --:data1.actnum;
 
-   RETURN VARCHAR2;
+   RETURN v_pad_payment_for;
 EXCEPTION
    WHEN NO_DATA_FOUND
    THEN
