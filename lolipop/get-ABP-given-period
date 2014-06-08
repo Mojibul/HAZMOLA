@@ -1,0 +1,8 @@
+SELECT   *
+    FROM stlbas.sttftra a
+   WHERE a.brancd = DECODE (:p_brancd, '100', a.brancd, :p_brancd)
+     AND a.actype = DECODE (:p_actype, 'ALL', a.actype, :p_actype)
+     AND a.oprtyp = 'ACP'
+     AND a.sgacno IS NOT NULL
+     AND a.docdat BETWEEN :p_stdat AND :p_endt
+ORDER BY 1
