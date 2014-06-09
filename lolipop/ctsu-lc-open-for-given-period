@@ -1,0 +1,12 @@
+SELECT b.lcnumb, b.opndat
+  FROM stlbas.stfacmas a, stlbas.stilcmas b
+ WHERE     a.brancd = b.brancd
+       AND a.actype = b.actype
+       AND a.actnum = b.actnum
+       AND a.brancd = '110'
+       AND A.ACTYPE = a.actype
+       AND a.actnum = a.actnum
+       AND a.fdrser = '048'
+       AND a.actype IN ('T01', 'T05')
+       AND b.lcnumb IS NOT NULL
+       AND a.opndat BETWEEN :p_1stdt AND :p_2nddt
