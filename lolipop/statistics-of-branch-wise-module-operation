@@ -1,0 +1,11 @@
+SELECT   a.brancd, b.bannum, a.actype,
+         (SELECT d.coddes
+            FROM stlbas.stcodmas d
+           WHERE harcod = 'ATY' AND corcod = a.actype) actdes, COUNT (opndat)
+    FROM stlbas.stfacmas a, stlbas.stbaninf b
+   WHERE a.brancd = b.brancd
+     AND b.grpcde = '001'
+     AND a.actype IN ('T06', 'T08', 'T07', 'T05', 'T12', 'L21', 'T13', 'T11')
+     AND a.opndat BETWEEN '01-JAN-2014' AND TRUNC (SYSDATE)
+GROUP BY a.brancd, b.bannum, a.actype
+ORDER BY a.brancd, a.actype
