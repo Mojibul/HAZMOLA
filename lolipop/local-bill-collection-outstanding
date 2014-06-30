@@ -1,0 +1,25 @@
+SELECT a.actype actype, a.actnum ldbcno, a.bnfnam bnfname, a.opndat issdate, a.curcde curcde, a.exrate exrate,
+       a.lcamtf billamntfc, a.lcamtl billamntlc, a.indirc appnam, a.ilcnum lcnum, a.btradt lcissdat, c.outstamt,
+       a.appbnk appbnk, a.appbrn appbrn, a.pinvd1 appbnkadd, a.acpdat acpdate, a.expdat expdate, a.lcstat lcstat,
+       b.cuscod cuscod, b.fdrser
+  FROM stlbas.stilcmas a,
+       stlbas.stfacmas b,
+       (SELECT   x.brancd, x.actype, x.actnum, SUM (x.tamtlc) outstamt
+            FROM stlbas.sttftran x
+           WHERE x.brancd = '110'
+             AND x.actype = 'T12'
+             AND x.docdat BETWEEN :frmdat AND :todat
+             AND x.oprtyp IN ('ISS', 'LIR')
+             AND x.oprtyp = DECODE (:p_4, 'RLOL', 'LIR', x.oprtyp)
+        GROUP BY x.brancd, x.actype, x.actnum) c
+ WHERE a.brancd = b.brancd
+   AND b.brancd = c.brancd
+   AND a.actype = b.actype
+   AND b.actype = c.actype
+   AND a.actnum = b.actnum
+   AND b.actnum = c.actnum
+   AND a.expdat < DECODE (:p_4, 'ODAB', TRUNC (SYSDATE), TRUNC (SYSDATE) + 5)
+   --AND a.actnum BETWEEN :from_bill_ref_no AND :to_bill_ref_no
+   AND b.fdrser = DECODE (:p0, '110', DECODE (:p_7, 'ALL', b.fdrser, :p_7), :p0)
+   AND b.cuscod = DECODE (:p_6, 'ALL', b.cuscod, :p_6)
+   AND a.lcstat = DECODE (:p_4, 'ALL', a.lcstat, 'RLOL', a.lcstat, 'ODAB', 'ISS', :p_4)
