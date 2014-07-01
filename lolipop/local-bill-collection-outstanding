@@ -1,7 +1,11 @@
-SELECT a.actype actype, a.actnum ldbcno, a.bnfnam bnfname, a.opndat issdate, a.curcde curcde, a.exrate exrate,
-       a.lcamtf billamntfc, a.lcamtl billamntlc, a.indirc appnam, a.ilcnum lcnum, a.btradt lcissdat, c.outstamt,
-       a.appbnk appbnk, a.appbrn appbrn, a.pinvd1 appbnkadd, a.acpdat acpdate, a.expdat expdate, a.lcstat lcstat,
-       b.cuscod cuscod, b.fdrser
+
+SELECT a.actype actype, a.actnum ldbcno, a.bnfnam bnfname, a.opndat issdate,
+       a.curcde curcde, a.exrate exrate, a.lcamtf billamntfc,
+       a.lcamtl billamntlc, a.indirc appnam, a.ilcnum lcnum,
+       a.btradt lcissdat,
+       DECODE (:p_4, 'RLOL', c.outstamt + a.lcamtl, c.outstamt) outstamt,
+       a.appbnk appbnk, a.appbrn appbrn, a.pinvd1 appbnkadd, a.acpdat acpdate,
+       a.expdat expdate, a.lcstat lcstat, b.cuscod cuscod, b.fdrser
   FROM stlbas.stilcmas a,
        stlbas.stfacmas b,
        (SELECT   x.brancd, x.actype, x.actnum, SUM (x.tamtlc) outstamt
@@ -18,8 +22,26 @@ SELECT a.actype actype, a.actnum ldbcno, a.bnfnam bnfname, a.opndat issdate, a.c
    AND b.actype = c.actype
    AND a.actnum = b.actnum
    AND b.actnum = c.actnum
-   AND a.expdat < DECODE (:p_4, 'ODAB', TRUNC (SYSDATE), TRUNC (SYSDATE) + 5)
+    /*  AND ( a.expdat <= DECODE (:p_4, 'ODAB', TRUNC (SYSDATE), TRUNC (SYSDATE) + 5)
+      OR a.expdat IS NULL
+      )
+   */
+   AND NVL (a.expdat, ADD_MONTHS (SYSDATE, 60)) <=
+              DECODE (:p_4,
+                      'ODAB', TRUNC (SYSDATE),
+                      ADD_MONTHS (SYSDATE, 60)
+                     )
+   --AND a.expdat < DECODE (:p_4, 'ODAB', TRUNC (SYSDATE), NULL)
    --AND a.actnum BETWEEN :from_bill_ref_no AND :to_bill_ref_no
-   AND b.fdrser = DECODE (:p0, '110', DECODE (:p_7, 'ALL', b.fdrser, :p_7), :p0)
+   AND b.fdrser = DECODE (:p0,
+                          '110', DECODE (:p_7, 'ALL', b.fdrser, :p_7),
+                          :p0
+                         )
    AND b.cuscod = DECODE (:p_6, 'ALL', b.cuscod, :p_6)
-   AND a.lcstat = DECODE (:p_4, 'ALL', a.lcstat, 'RLOL', a.lcstat, 'ODAB', 'ISS', :p_4)
+   AND a.lcstat =
+          DECODE (:p_4,
+                  'ALL', a.lcstat,
+                  'RLOL', a.lcstat,
+                  'ODAB', 'ACP',
+                  :p_4
+                 )
