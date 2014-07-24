@@ -1,0 +1,35 @@
+ SELECT h.brancd,
+         h.actype,
+         h.cuscod,
+         h.cons_amt,
+         h.tb_usdlmt
+    FROM (SELECT c.brancd,
+                 c.actype,
+                 c.cuscod,
+                 c.srlnum,
+                 c.cons_amt,
+                 (SELECT d.usdlmt
+                    FROM stlbas.stbrnlm1 d
+                   WHERE     d.brancd = c.brancd
+                         AND d.actype = c.actype
+                         AND d.cuscod = c.cuscod
+                         AND d.srlnum = c.srlnum)
+                    tb_usdlmt
+            FROM (  SELECT a.brancd,
+                           a.actype,
+                           a.cuscod,
+                           a.srlnum,
+                           SUM (b.tamtlc) cons_amt
+                      FROM stlbas.stfacmas a, stlbas.sttftran b
+                     WHERE     a.brancd = b.brancd
+                           AND a.actype = b.actype
+                           AND a.actnum = b.actnum
+                           AND a.actype = 'T05'
+                           AND b.oprtyp IN ('ISS', 'AMD')
+                           AND a.srlnum IS NOT NULL
+                  GROUP BY a.brancd,
+                           a.actype,
+                           a.cuscod,
+                           a.srlnum) c) h
+   WHERE ROUND (h.cons_amt, 2) <> ROUND (h.tb_usdlmt, 2)
+ORDER BY h.brancd
