@@ -1,12 +1,21 @@
  SELECT h.brancd,
          h.actype,
          h.cuscod,
+         h.tb_gvlmt,
          h.cons_amt,
-         h.tb_usdlmt
+         h.tb_usdlmt,
+         h.srlnum
     FROM (SELECT c.brancd,
                  c.actype,
                  c.cuscod,
                  c.srlnum,
+                 (SELECT d.lmtamt
+                    FROM stlbas.stbrnlm1 d
+                   WHERE     d.brancd = c.brancd
+                         AND d.actype = c.actype
+                         AND d.cuscod = c.cuscod
+                         AND d.srlnum = c.srlnum)
+                   tb_gvlmt,
                  c.cons_amt,
                  (SELECT d.usdlmt
                     FROM stlbas.stbrnlm1 d
@@ -26,10 +35,15 @@
                            AND a.actnum = b.actnum
                            AND a.actype = 'T05'
                            AND b.oprtyp IN ('ISS', 'AMD')
+                           AND a.regone = 'O'
                            AND a.srlnum IS NOT NULL
                   GROUP BY a.brancd,
                            a.actype,
                            a.cuscod,
                            a.srlnum) c) h
-   WHERE ROUND (h.cons_amt, 2) <> ROUND (h.tb_usdlmt, 2)
+   WHERE 
+          h.tb_gvlmt < h.tb_usdlmt 
+       OR h.tb_gvlmt < h.cons_amt
+       OR h.tb_usdlmt < h.cons_amt
+   --ROUND (h.cons_amt, 2) <> ROUND (h.tb_usdlmt, 2)
 ORDER BY h.brancd
