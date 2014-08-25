@@ -1,0 +1,126 @@
+BEGIN
+   FOR ind
+      IN (SELECT a.brancd, a.brannm
+            FROM stlbas.stbaninf a
+           WHERE     a.grpcde = '001'
+                 AND a.brancd <> '100'
+                 AND a.bannum IS NOT NULL)
+   LOOP
+      FOR ind1 IN (SELECT a.sofcod
+                     FROM stlbas.stcodmas a
+                    WHERE a.harcod = 'CLM' AND a.sofcod <> ind.brancd)
+      LOOP
+         IF ind.brancd <> ind1.sofcod
+         THEN
+            BEGIN
+               INSERT INTO stlbas.stcodmas (harcod,
+                                            sofcod,
+                                            coddes,
+                                            corcod,
+                                            amount,
+                                            manhrs,
+                                            rtdnon,
+                                            oprstamp,
+                                            timstamp,
+                                            seccod,
+                                            actflg)
+                    VALUES ('CLM',
+                            ind.brancd,
+                            ind.brannm,
+                            NULL,
+                            NULL,
+                            NULL,
+                            NULL,
+                            'STELAR',
+                            SYSDATE,
+                            NULL,
+                            'Y');
+            EXCEPTION
+               WHEN OTHERS
+               THEN
+                  ROLLBACK;
+            END;
+         END IF;
+
+         COMMIT;
+      END LOOP;
+
+      FOR ind2 IN (SELECT a.sofcod, a.harcod
+                     FROM stlbas.stcodmas a
+                    WHERE a.harcod <> ind.brancd AND a.sofcod = 'T01')
+      LOOP
+         IF ind.brancd <> ind2.harcod
+         THEN
+            BEGIN
+               INSERT INTO stlbas.stcodmas (harcod,
+                                            sofcod,
+                                            coddes,
+                                            corcod,
+                                            amount,
+                                            manhrs,
+                                            rtdnon,
+                                            oprstamp,
+                                            timstamp,
+                                            seccod,
+                                            actflg)
+                    VALUES (IND.brancd,
+                            'T01',
+                            'IMPORT LC',
+                            NULL,
+                            NULL,
+                            NULL,
+                            NULL,
+                            'STELAR',
+                            SYSDATE,
+                            NULL,
+                            'Y');
+            EXCEPTION
+               WHEN OTHERS
+               THEN
+                  ROLLBACK;
+            END;
+         END IF;
+
+         COMMIT;
+      END LOOP;
+
+      FOR ind3 IN (SELECT a.sofcod, a.harcod
+                     FROM stlbas.stcodmas a
+                    WHERE a.harcod <> ind.brancd AND a.sofcod = 'T05')
+      LOOP
+         IF ind.brancd <> ind3.harcod
+         THEN
+            BEGIN
+               INSERT INTO stlbas.stcodmas (harcod,
+                                            sofcod,
+                                            coddes,
+                                            corcod,
+                                            amount,
+                                            manhrs,
+                                            rtdnon,
+                                            oprstamp,
+                                            timstamp,
+                                            seccod,
+                                            actflg)
+                    VALUES (IND.brancd,
+                            'T05',
+                            'BTB LC',
+                            NULL,
+                            NULL,
+                            NULL,
+                            NULL,
+                            'STELAR',
+                            SYSDATE,
+                            NULL,
+                            'Y');
+            EXCEPTION
+               WHEN OTHERS
+               THEN
+                  ROLLBACK;
+            END;
+         END IF;
+
+         COMMIT;
+      END LOOP;
+   END LOOP;
+END;
