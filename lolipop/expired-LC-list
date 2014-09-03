@@ -1,0 +1,11 @@
+SELECT a.brancd, a.lcnumb, a.lcamtf lcamt_fcy, a.lcamtl lcamt_fcy,
+       a.rmamtf outs_fcy, a.rmamtl outs_lcy, a.opndat lc_open_date,
+       NVL(a.EXPNEW,a.expdat) expiry_date, a.acpamt abp_amt, a.acprmt abp_outs,
+       a.lcstat lc_status
+  FROM stlbas.stilcmas a, stlbas.stfacmas b
+ WHERE a.brancd = b.brancd
+   AND a.actype = b.actype
+   AND a.actype IN ('T01', 'T05')
+   AND a.actnum = b.actnum
+   AND NVL(a.EXPNEW,a.expdat) < SYSDATE
+   AND a.lcstat NOT IN ('CAN', 'CLS', 'OPN')
