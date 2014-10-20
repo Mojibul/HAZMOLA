@@ -1,0 +1,160 @@
+/*
+Purpose: Monthly and cumulative position of foregin exchange business
+
+*/
+/***********************************************
+ UPTO PREVIOUS MONTH
+************************************************/
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+    AND a.opndat <= LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1))
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+/***********************************************
+ DURING THE MONTH
+************************************************/
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy, SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+      AND a.opndat BETWEEN LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1)) + 1 AND TRUNC (SYSDATE)
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+
+/***********************************************
+ CUMILATIVE FOR THE YEAR
+************************************************/
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+     AND a.opndat BETWEEN TRUNC (SYSDATE, 'YEAR')
+                      AND LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'YEAR'), 11))
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+
+/*************************************************************
+ CUMULATIVE FOR CORRESPONDING PERIOD OF PREVIOUS YEAR
+**************************************************************/
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+    AND a.opndat between ADD_MONTHS(TRUNC (SYSDATE , 'YEAR'),-12) AND TRUNC (SYSDATE , 'YEAR')-1
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+
+/*************************************************************
+ GROWTH
+**************************************************************/
+
+SELECT   p.stntrn, NVL ((c.amt_in_bdt - p.amt_in_bdt), 0) growth,
+round((NVL ((c.amt_in_bdt - p.amt_in_bdt), 0) * 100)/p.amt_in_bdt,2)in_pct
+    FROM (SELECT   a.stntrn, SUM (a.lcamtl) amt_in_bdt
+              FROM stlbas.stilcmas a
+             WHERE a.brancd IN (SELECT a.brancd
+                                  FROM stlbas.stbaninf a
+                                 WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+               AND a.actype IN ('T01', 'T05')
+               AND a.opndat BETWEEN ADD_MONTHS (TRUNC (SYSDATE, 'YEAR'), -12) AND TRUNC (SYSDATE, 'YEAR') - 1
+          GROUP BY a.stntrn) p
+         FULL OUTER JOIN
+         (SELECT   a.stntrn, SUM (a.lcamtl) amt_in_bdt
+              FROM stlbas.stilcmas a
+             WHERE a.brancd IN (SELECT a.brancd
+                                  FROM stlbas.stbaninf a
+                                 WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+               AND a.actype IN ('T01', 'T05')
+               AND a.opndat BETWEEN TRUNC (SYSDATE, 'YEAR') AND LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'YEAR'), 11))
+          GROUP BY a.stntrn) c ON p.stntrn = c.stntrn
+ORDER BY 1 ASC
+
+
+---
+-- upto previous month
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+    AND a.opndat <= LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1))
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+-- During this month
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy, SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+      AND a.opndat BETWEEN LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1)) + 1 AND TRUNC (SYSDATE)
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+-- Cumulative for the year
+
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy, SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+      AND a.opndat BETWEEN LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1)) + 1 AND TRUNC (SYSDATE)
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+-- cumulative for the year
+/* Formatted on 2014/01/20 13:13 (Formatter Plus v4.8.8) */
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+     AND a.opndat BETWEEN TRUNC (SYSDATE, 'YEAR')
+                      AND LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'YEAR'), 11))
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+/* Cumulative for previous year */
+
+
+SELECT   a.stntrn, COUNT (a.lcnumb) no_of_lc, SUM (a.lcamtf) amt_in_fcy,
+         SUM (a.lcamtl) amt_in_bdt
+    FROM stlbas.stilcmas a
+   WHERE a.brancd IN (SELECT a.brancd
+                        FROM stlbas.stbaninf a
+                       WHERE a.grpcde = '001' AND a.bannum IS NOT NULL)
+     AND a.actype IN ('T01', 'T05')
+    -- AND a.opndat <= TRUNC (SYSDATE , 'YEAR')-1 
+ AND a.opndat between ADD_MONTHS(TRUNC (SYSDATE , 'YEAR'),-12) AND TRUNC (SYSDATE , 'YEAR')-1
+GROUP BY a.stntrn
+ORDER BY 1 ASC
+
+/*
+SELECT ADD_MONTHS(sysdate,1),LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1))
+FROM DUAL
+
+SELECT sysdate,ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1) , LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1)),
+LAST_DAY (ADD_MONTHS (TRUNC (SYSDATE, 'mm'), -1))+1
+FROM dual
+*/
